@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>master_project</name>
+  <name>master_project_test</name>
   <version>0.0.0</version>
   <description>A ROS2 package for UR5e robot control using MoveIt Task Constructor and UR RTDE.</description>
   <maintainer email="sohaibshehabsnouber@gmail.com">sohaib</maintainer>

@@ -7,7 +7,7 @@ def generate_launch_description():
 
     # MTC Demo node
     pick_place_demo = Node(
-        package="master_project",
+        package="master_project_test",
         executable="target_mtc_node",
         output="screen",
         parameters=[

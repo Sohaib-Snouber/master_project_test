@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(master_project)
+project(master_project_test)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -30,15 +30,38 @@ ament_target_dependencies(target_mtc_node
   moveit_task_constructor_core
   rclcpp
 )
+add_executable(planning_scene_node src/planning_scene_node.cpp)
+ament_target_dependencies(planning_scene_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
+add_executable(target_pose_node src/target_pose_node.cpp)
+ament_target_dependencies(target_pose_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
+add_executable(task_execution_node src/task_execution_node.cpp)
+ament_target_dependencies(task_execution_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
+add_executable(task_usage_node src/task_usage_node.cpp)
+ament_target_dependencies(task_usage_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
 
 install(TARGETS
   sync_robot_state_node
   DESTINATION lib/${PROJECT_NAME}
 )
-
-install(TARGETS target_mtc_node
+install(TARGETS 
+  target_mtc_node
   DESTINATION lib/${PROJECT_NAME})
-
+install(TARGETS
+  planning_scene_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+install(TARGETS
+  target_pose_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+install(TARGETS
+  task_execution_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+install(TARGETS
+  task_usage_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 # Include directories
 include_directories(
   include
@@ -49,6 +72,7 @@ include_directories(
 target_link_libraries(sync_robot_state_node
   ur_rtde::rtde
 )
+
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
 if(BUILD_TESTING)

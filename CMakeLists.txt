@@ -12,6 +12,10 @@ find_package(moveit_core REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(moveit_task_constructor_core REQUIRED)
 find_package(ur_rtde REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(master_project_msgs)
+find_package(moveit_visual_tools REQUIRED)
+
 
 include_directories(
   include
@@ -20,6 +24,8 @@ include_directories(
   ${moveit_ros_planning_interface_INCLUDE_DIRS}
   ${moveit_task_constructor_core_INCLUDE_DIRS}
   ${ur_rtde_INCLUDE_DIRS}
+  ${geometry_msgs_INCLUDE_DIRS}
+
 )
 
 add_executable(sync_robot_state_node src/sync_robot_state_node.cpp)
@@ -35,9 +41,39 @@ ament_target_dependencies(planning_scene_node rclcpp moveit_core moveit_ros_plan
 add_executable(target_pose_node src/target_pose_node.cpp)
 ament_target_dependencies(target_pose_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
 add_executable(task_execution_node src/task_execution_node.cpp)
-ament_target_dependencies(task_execution_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
+ament_target_dependencies(task_execution_node
+ rclcpp moveit_core
+ moveit_ros_planning_interface 
+ moveit_task_constructor_core 
+ ur_rtde 
+ geometry_msgs   
+ master_project_msgs
+)
 add_executable(task_usage_node src/task_usage_node.cpp)
-ament_target_dependencies(task_usage_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
+ament_target_dependencies(task_usage_node
+ rclcpp 
+ moveit_core 
+ moveit_ros_planning_interface 
+ moveit_task_constructor_core 
+ ur_rtde
+ master_project_msgs
+)
+add_executable(sync_rviz_pose src/sync_rviz_pose.cpp)
+ament_target_dependencies(sync_rviz_pose
+  moveit_ros_planning_interface
+  moveit_visual_tools
+  rclcpp
+  geometry_msgs
+  std_msgs
+  moveit_msgs
+  moveit_core
+  ur_rtde
+)
+target_link_libraries(sync_rviz_pose
+  ur_rtde::rtde
+)
+install(TARGETS sync_rviz_pose
+  DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS
   sync_robot_state_node
@@ -62,19 +98,18 @@ install(TARGETS
   task_usage_node
   DESTINATION lib/${PROJECT_NAME}
 )
-# Include directories
-include_directories(
-  include
-  ${rclcpp_INCLUDE_DIRS}
-  ${moveit_msgs_INCLUDE_DIRS}
-  ${ur_rtde_INCLUDE_DIRS} # Include ur_rtde headers
-)
+
 target_link_libraries(sync_robot_state_node
   ur_rtde::rtde
 )
-
+target_link_libraries(task_usage_node
+  ur_rtde::rtde
+)
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
+
+
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

@@ -9,6 +9,8 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <master_project_msgs/msg/task.hpp>
 #include <moveit/robot_trajectory/robot_trajectory.h>
+#include <moveit/planning_scene_interface/planning_scene_interface.h>
+
 
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("execution_task");
 namespace mtc = moveit::task_constructor;
@@ -49,7 +51,10 @@ void TaskExecutionNode::setup()
   moveit::core::RobotModelPtr robot_model = robot_model_loader.getModel();
   RCLCPP_INFO(this->get_logger(), "Robot model loaded.");
 
-
+  // Create a PlanningSceneInterface to ensure it can access the planning scene
+  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+  // Optionally wait for the planning scene to be initialized
+  rclcpp::sleep_for(std::chrono::seconds(1));
 }
 
 void TaskExecutionNode::taskPoseCallback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
@@ -111,11 +116,17 @@ void TaskExecutionNode::createAndPublishTask()
   target_pose.pose.position.z = target_pose.pose.position.z - offset_vector.z();
   target_pose.pose.orientation = target_pose.pose.orientation;  // Keep the same orientation
 
-  // Open hand
+/*   // Open hand
   auto stage_open_hand = std::make_unique<mtc::stages::MoveTo>("open hand", sampling_planner);
   stage_open_hand->setGroup(hand_group_name);
   stage_open_hand->setGoal("open");
-  task_.add(std::move(stage_open_hand));
+  task_.add(std::move(stage_open_hand)); */
+
+  // not_full_open hand
+  auto stage_not_full_open_hand = std::make_unique<mtc::stages::MoveTo>("not full open hand", sampling_planner);
+  stage_not_full_open_hand->setGroup(hand_group_name);
+  stage_not_full_open_hand->setGoal("not_full_open");
+  task_.add(std::move(stage_not_full_open_hand));
 
   // Move to target pose
   auto move_to_target = std::make_unique<mtc::stages::MoveTo>("move to target", sampling_planner);
@@ -132,7 +143,7 @@ void TaskExecutionNode::createAndPublishTask()
   move_to_slide->setGoal(slide_pose);
   task_.add(std::move(move_to_slide));
 
-  // Allow collision (hand, target1) temporarily
+  /* // Allow collision (hand, target1) temporarily
   auto allow_collision_target1 = std::make_unique<mtc::stages::ModifyPlanningScene>("allow collision (hand, target1)");
   allow_collision_target1->allowCollisions("target1",
                                             task_.getRobotModel()
@@ -144,19 +155,19 @@ void TaskExecutionNode::createAndPublishTask()
   // Allow collision (target1, table1) temporarily
   auto allow_collision_target1_table1 = std::make_unique<mtc::stages::ModifyPlanningScene>("allow collision (target1, table1)");
   allow_collision_target1_table1->allowCollisions("target1", {"table1"}, true);
-  task_.add(std::move(allow_collision_target1_table1));
+  task_.add(std::move(allow_collision_target1_table1)); */
 
-  // Close hand
+  /* // Close hand
   auto stage_close_hand = std::make_unique<mtc::stages::MoveTo>("close hand", sampling_planner);
   stage_close_hand->setGroup(hand_group_name);
   stage_close_hand->setGoal("close");
   task_.add(std::move(stage_close_hand));
-
-  // Attach target1 to the gripper
+ */
+  /* // Attach target1 to the gripper
   auto attach_target1 = std::make_unique<mtc::stages::ModifyPlanningScene>("attach target1");
   attach_target1->attachObject("target1", hand_frame);
   task_.add(std::move(attach_target1));
-
+ */
   // Lift target1 slightly to avoid collision with the table
   auto lift_target1 = std::make_unique<mtc::stages::MoveRelative>("lift target1", cartesian_planner);
   lift_target1->properties().set("marker_ns", "lift_target1");
@@ -173,10 +184,16 @@ void TaskExecutionNode::createAndPublishTask()
   lift_target1->setDirection(lift_direction);
   task_.add(std::move(lift_target1));
 
-  // Re-enable collision (target1, table1) after lifting
+ /*  // Re-enable collision (target1, table1) after lifting
   auto reenable_collision_target1_table1 = std::make_unique<mtc::stages::ModifyPlanningScene>("reenable collision (target1, table1)");
   reenable_collision_target1_table1->allowCollisions("target1", {"table1"}, false);
-  task_.add(std::move(reenable_collision_target1_table1));
+  task_.add(std::move(reenable_collision_target1_table1)); */
+
+  /* // open2 hand
+  auto stage_open2_hand = std::make_unique<mtc::stages::MoveTo>("open hand", sampling_planner);
+  stage_open2_hand->setGroup(hand_group_name);
+  stage_open2_hand->setGoal("not_full_open");
+  task_.add(std::move(stage_open2_hand)); */
 
   // Initialize the task and publish task details
   try
@@ -229,16 +246,6 @@ void TaskExecutionNode::publishTaskDetails(const moveit::task_constructor::Task&
           {
             master_project_msgs::msg::Waypoint waypoint_msg;
             const auto& waypoint = trajectory.getWayPoint(j);
-
-            waypoint_msg.pose.position.x = waypoint.getFrameTransform("world").translation().x();
-            waypoint_msg.pose.position.y = waypoint.getFrameTransform("world").translation().y();
-            waypoint_msg.pose.position.z = waypoint.getFrameTransform("world").translation().z();
-
-            Eigen::Quaterniond quat(waypoint.getFrameTransform("world").rotation());
-            waypoint_msg.pose.orientation.x = quat.x();
-            waypoint_msg.pose.orientation.y = quat.y();
-            waypoint_msg.pose.orientation.z = quat.z();
-            waypoint_msg.pose.orientation.w = quat.w();
 
             for (const auto& joint : waypoint.getVariableNames())
             {

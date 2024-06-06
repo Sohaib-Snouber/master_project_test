@@ -18,27 +18,60 @@ private:
     const std::string& id, float r, float g, float b, float a);
 
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface_;
+  rclcpp::Publisher<moveit_msgs::msg::PlanningScene>::SharedPtr planning_scene_publisher_;
+
 };
 
 PlanningSceneNode::PlanningSceneNode() : Node("planning_scene_node")
 {
+  planning_scene_publisher_ = this->create_publisher<moveit_msgs::msg::PlanningScene>("planning_scene", 1);
   setupPlanningScene();
 }
 
 void PlanningSceneNode::setupPlanningScene()
 {
-  /* // Create collision objects
-  shape_msgs::msg::SolidPrimitive primitive_table1;
-  primitive_table1.type = primitive_table1.BOX;
-  primitive_table1.dimensions = {0.9, 0.6, 0.2};
-  geometry_msgs::msg::Pose table1_pose;
-  table1_pose.orientation.w = 1.0;
-  table1_pose.position.x = 0.45;
-  table1_pose.position.y = -0.6;
-  table1_pose.position.z = 0.1;
-  moveit_msgs::msg::CollisionObject collision_object_table1 = createCollisionObject("table1", primitive_table1, table1_pose);
+  // Create collision objects
+  shape_msgs::msg::SolidPrimitive primitive_wall1;
+  primitive_wall1.type = primitive_wall1.BOX;
+  primitive_wall1.dimensions = {0.1, 1.4, 0.5};
+  geometry_msgs::msg::Pose wall1_pose;
+  wall1_pose.orientation.w = 1.0;
+  wall1_pose.position.x = 0.8;
+  wall1_pose.position.y = 0.2;
+  wall1_pose.position.z = 0.25;
+  moveit_msgs::msg::CollisionObject collision_object_wall1 = createCollisionObject("wall1", primitive_wall1, wall1_pose);
+  
+  shape_msgs::msg::SolidPrimitive primitive_wall2;
+  primitive_wall2.type = primitive_wall2.BOX;
+  primitive_wall2.dimensions = {1.4, 0.1, 0.5};
+  geometry_msgs::msg::Pose wall2_pose;
+  wall2_pose.orientation.w = 1.0;
+  wall2_pose.position.x = 0.2;
+  wall2_pose.position.y = 0.8;
+  wall2_pose.position.z = 0.25;
+  moveit_msgs::msg::CollisionObject collision_object_wall2 = createCollisionObject("wall2", primitive_wall2, wall2_pose);
 
-  shape_msgs::msg::SolidPrimitive primitive_table2;
+  shape_msgs::msg::SolidPrimitive primitive_wall3;
+  primitive_wall3.type = primitive_wall3.BOX;
+  primitive_wall3.dimensions = {0.1, 1.4, 0.5};
+  geometry_msgs::msg::Pose wall3_pose;
+  wall3_pose.orientation.w = 1.0;
+  wall3_pose.position.x = -0.6;
+  wall3_pose.position.y = 0.2;
+  wall3_pose.position.z = 0.25;
+  moveit_msgs::msg::CollisionObject collision_object_wall3 = createCollisionObject("wall3", primitive_wall3, wall3_pose);
+  
+  shape_msgs::msg::SolidPrimitive primitive_wall4;
+  primitive_wall4.type = primitive_wall4.BOX;
+  primitive_wall4.dimensions = {1.4, 0.1, 0.5};
+  geometry_msgs::msg::Pose wall4_pose;
+  wall4_pose.orientation.w = 1.0;
+  wall4_pose.position.x = 0.2;
+  wall4_pose.position.y = -0.6;
+  wall4_pose.position.z = 0.25;
+  moveit_msgs::msg::CollisionObject collision_object_wall4 = createCollisionObject("wall4", primitive_wall4, wall4_pose);
+
+  /* shape_msgs::msg::SolidPrimitive primitive_table2;
   primitive_table2.type = primitive_table2.BOX;
   primitive_table2.dimensions = {0.6, 0.9, 0.2};
   geometry_msgs::msg::Pose table2_pose;
@@ -46,9 +79,10 @@ void PlanningSceneNode::setupPlanningScene()
   table2_pose.position.x = -0.60;
   table2_pose.position.y = 0.0;
   table2_pose.position.z = 0.1;
-  moveit_msgs::msg::CollisionObject collision_object_table2 = createCollisionObject("table2", primitive_table2, table2_pose);
+  moveit_msgs::msg::CollisionObject collision_object_table2 = createCollisionObject("table2", primitive_table2, table2_pose); */
 
-  shape_msgs::msg::SolidPrimitive primitive_target1;
+
+  /* shape_msgs::msg::SolidPrimitive primitive_target1;
   primitive_target1.type = primitive_target1.CYLINDER;
   primitive_target1.dimensions = {0.1, 0.02}; // height, radius
   geometry_msgs::msg::Pose target1_pose;
@@ -73,17 +107,25 @@ void PlanningSceneNode::setupPlanningScene()
   moveit_msgs::msg::ObjectColor table2_color = createObjectColor("table2", 1.0, 0.5, 0.5, 1.0);
   moveit_msgs::msg::ObjectColor target1_color = createObjectColor("target1", 0.5, 0.0, 1.0, 1.0); */
   moveit_msgs::msg::ObjectColor surface_color = createObjectColor("surface", 0.5, 0.5, 0.5, 1.0);
+  moveit_msgs::msg::ObjectColor wall1_color = createObjectColor("wall1", 0.1, 0.2, 0.3, 1.0); // -y axis
+  moveit_msgs::msg::ObjectColor wall2_color = createObjectColor("wall2", 1.0, 1.0, 1.0, 1.0); // +x axis
+  moveit_msgs::msg::ObjectColor wall3_color = createObjectColor("wall3", 1.0, 1.0, 1.0, 1.0); // +y axis
+  moveit_msgs::msg::ObjectColor wall4_color = createObjectColor("wall4", 1.0, 1.0, 1.0, 1.0); //- x axis
+
 
   // Create a PlanningScene message and add the collision objects and their colors
   moveit_msgs::msg::PlanningScene planning_scene_msg;
   planning_scene_msg.is_diff = true;
-  planning_scene_msg.world.collision_objects = {collision_object_surface};
-  planning_scene_msg.object_colors = {surface_color};
+  planning_scene_msg.world.collision_objects = {collision_object_surface, collision_object_wall1,collision_object_wall2,collision_object_wall3,collision_object_wall4};
+  planning_scene_msg.object_colors = {surface_color, wall1_color, wall2_color, wall3_color, wall4_color};
   /* planning_scene_msg.world.collision_objects = {collision_object_table1, collision_object_table2, collision_object_target1, collision_object_surface};
   planning_scene_msg.object_colors = {table1_color, table2_color, target1_color, surface_color}; */
 
   // Apply the planning scene
   planning_scene_interface_.applyPlanningScene(planning_scene_msg);
+
+  // Publish the planning scene
+  planning_scene_publisher_->publish(planning_scene_msg);
 
   RCLCPP_INFO(this->get_logger(), "Planning scene setup complete");
 }

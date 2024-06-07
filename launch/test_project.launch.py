@@ -43,7 +43,7 @@ def generate_launch_description():
     )
 
     # Task Print Node
-    task_print_node = Node(
+    task_usage_node = Node(
         package='master_project_test',
         executable='task_usage_node',
         name='task_usage_node',
@@ -63,8 +63,7 @@ def generate_launch_description():
                     target_action=ur_rtde_node,
                     on_exit=[planning_scene_node,
                              target_pose_node,
-                             task_execution_node,
-                             task_print_node
+                             task_execution_node
                             ],
                 )
             ),

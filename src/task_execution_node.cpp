@@ -85,7 +85,7 @@ void TaskExecutionNode::createAndPublishTask()
   auto cartesian_planner = std::make_shared<mtc::solvers::CartesianPath>();
   cartesian_planner->setMaxVelocityScalingFactor(1.0);
   cartesian_planner->setMaxAccelerationScalingFactor(1.0);
-  cartesian_planner->setStepSize(.01);
+  cartesian_planner->setStepSize(0.005);
 
   // Current state
   auto stage_state_current = std::make_unique<mtc::stages::CurrentState>("current");

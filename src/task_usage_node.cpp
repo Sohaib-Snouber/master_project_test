@@ -79,9 +79,9 @@ private:
         }
 
         std::vector<double> one_pos(joint_positions.begin(), joint_positions.end());
-        one_pos.push_back(0.5);  // velocity
+        one_pos.push_back(1.0);  // velocity
         one_pos.push_back(1.2);  // acceleration
-        one_pos.push_back(0.001);  // blend (5mm tolerance)
+        one_pos.push_back(0.005);  // blend (5mm tolerance)
         robot_path.push_back(one_pos);
       }
 

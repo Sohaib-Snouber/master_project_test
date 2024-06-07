@@ -15,6 +15,8 @@ find_package(ur_rtde REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(master_project_msgs)
 find_package(moveit_visual_tools REQUIRED)
+find_package(rclcpp_action REQUIRED)
+
 
 
 include_directories(
@@ -27,6 +29,12 @@ include_directories(
   ${geometry_msgs_INCLUDE_DIRS}
 
 )
+
+add_executable(task_action_server src/task_action_server.cpp)
+ament_target_dependencies(task_action_server rclcpp rclcpp_action master_project_msgs moveit_core moveit_task_constructor_core moveit_ros_planning_interface)
+
+add_executable(task_action_client src/task_action_client.cpp)
+ament_target_dependencies(task_action_client rclcpp rclcpp_action master_project_msgs)
 
 add_executable(sync_robot_state_node src/sync_robot_state_node.cpp)
 ament_target_dependencies(sync_robot_state_node rclcpp moveit_core moveit_ros_planning_interface moveit_task_constructor_core ur_rtde)
@@ -72,37 +80,25 @@ ament_target_dependencies(sync_rviz_pose
 target_link_libraries(sync_rviz_pose
   ur_rtde::rtde
 )
-install(TARGETS sync_rviz_pose
-  DESTINATION lib/${PROJECT_NAME})
-
-install(TARGETS
-  sync_robot_state_node
-  DESTINATION lib/${PROJECT_NAME}
-)
 install(TARGETS 
+  sync_rviz_pose
+  sync_robot_state_node
   target_mtc_node
-  DESTINATION lib/${PROJECT_NAME})
-install(TARGETS
   planning_scene_node
-  DESTINATION lib/${PROJECT_NAME}
-)
-install(TARGETS
   target_pose_node
-  DESTINATION lib/${PROJECT_NAME}
-)
-install(TARGETS
   task_execution_node
-  DESTINATION lib/${PROJECT_NAME}
-)
-install(TARGETS
   task_usage_node
-  DESTINATION lib/${PROJECT_NAME}
-)
+  task_action_server
+  task_action_client
+  DESTINATION lib/${PROJECT_NAME})
 
 target_link_libraries(sync_robot_state_node
   ur_rtde::rtde
 )
 target_link_libraries(task_usage_node
+  ur_rtde::rtde
+)
+target_link_libraries(task_action_server
   ur_rtde::rtde
 )
 install(DIRECTORY launch
